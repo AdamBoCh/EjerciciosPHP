@@ -3,35 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Acertar el Numero</title>
+    <title>Formulario de Registro Simple</title>
 </head>
 <body>
-    <h1>Juego de Acertar el Numero</h1>
+    <h1>Formulario de Registro Simple</h1>
     <form method="get" action="">
-        <label for="usuario">Introduce el nombre: </label>
-        <input type="text" id="usuario">
-        <br>
-        <label for="email">Introduce el email: </label>
-        <input type="text" id="email">
-        <br>
-        <label for="contrasena">Introduce la contraseña: </label>
-        <input type="text" id="contrasena">
-        <br>
-        <label for="rep_contrasena">Repetir la contrseña: </label>
-        <input type="text" id="rep_contrasena">
-        <br>
-        <input type="submit" value="Enviar">
+        <label for="num_usuario">Introduce el numero: </label>
+        <input type="number" id="num_usuario">
+        <input type="submit" value="Adivinar Numero">
     </form>
-<?php
-    if (isset($_POST['contrasena]) && isset($_POST['rep_contrasena'])){
-        $contrasena = $_POST['contrasena'];
-        $rep_contrasena = $_POST['rep_contrasena'];
-        if ($contrasena === rep_contrsena) {
-            echo "Las contraseñas coinciden.";
+    <?php
+        $num_aleatorio = random_int(0, 5);
+        if ($_GET['num_usuario'] == $num_aleatorio) {
+            echo "Has acertado!!";
         } else {
-            echo "Las contraseñas no coinciden."; 
+            echo "No has acertado!. Era el numero $num_aleatorio";
         }
-)
-?>
+    ?>
 </body>
 </html>
