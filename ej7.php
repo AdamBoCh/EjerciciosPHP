@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Formulario de Registro con Validación</title>
 </head>
 <body>
-<h1>Formulario de Registro con Validacion</h1>
+    <h1>Formulario de Registro con Validación</h1>
+    
     <form method="post" action="">
         <label for="usuario">Introduce el nombre: </label>
         <input type="text" id="usuario" name="usuario" required>
@@ -15,59 +16,63 @@
         <input type="text" id="email" name="email" required>
         <br>
         <label for="contrasena">Introduce la contraseña: </label>
-        <input type="text" id="contrasena" name="contrasena" required>
+        <input type="password" id="contrasena" name="contrasena" required>
         <br>
         <label for="conf_contrasena">Confirmar contraseña: </label>
-        <input type="text" id="conf_contrasena" name="conf_contrasena" required>
+        <input type="password" id="conf_contrasena" name="conf_contrasena" required>
         <br>
         <input type="submit" value="Enviar">
     </form>
+
     <?php
-    if (isset($_POST["contrasena"]) && isset($_POST["conf_contrasena"]) && isset($_POST["usuario"]) && isset($_POST["email"])) {
-        $contrasena = $_POST["contrasena"];
-        $conf_contrasena = $_POST["conf_contrasena"];
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $usuario = $_POST["usuario"];
         $email = $_POST["email"];
+        $contrasena = $_POST["contrasena"];
+        $conf_contrasena = $_POST["conf_contrasena"];
+
+        $errores = [];
 
         if (empty($usuario)) {
-            $usuarioError = "El nombre es requerido.";
-        } else {
-            if (!preg_match("/^[a-zA-Z-' ]*$/", $usuario)) {
-                $usuarioError = "El nombre debe contener solo letras mayusculas, minusculas y espacios.";
-            }
+            $errores[] = "El nombre es requerido.";
+        } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $usuario)) {
+            $errores[] = "El nombre debe tener solo letras mayusculas, minusculas y espacios.";
         }
 
         if (empty($email)) {
-            $emailError = "El email es requerido.";
-        } else {
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)){
-                $emailError = "El correo electronico debe tener un formato valido.";
-            }
+            $errores[] = "El correo electrónico es requerido.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errores[] = "El correo electrónico debe tener un formato válido.";
         }
 
-        if (empty($contrasena) || strlen($contrasena) < 6) {
-            $contrasenaError = "La contraseña es requerida y debe tener 8 caracteres.";
-        } else {
-            if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#%!$&])/", $contrasena)) {
-                $contrasenaError = "La contraseña debe contener una letra mayuscula, una minuscula, un numero y un caracter especial.";
-            } else if ($contrasena !== $conf_contrasena) {
-                $contrasenaError = "Las contraseñas no coinciden.";
-            } else {
-                echo "La contraseña es valida.";
-            }
+        if (empty($contrasena)) {
+            $errores[] = "La contraseña es requerida.";
+        } elseif (strlen($contrasena) < 6) {
+            $errores[] = "La contraseña debe tener mas de 6 caracteres.";
+        } elseif (!preg_match("/[A-Z]/", $contrasena)) {
+            $errores[] = "La contraseña debe tener una letra mayúscula.";
+        } elseif (!preg_match("/[a-z]/", $contrasena)) {
+            $errores[] = "La contraseña debe tener una letra minuscula.";
+        } elseif (!preg_match("/\d/", $contrasena)) {
+            $errores[] = "La contraseña debe tener un numero.";
+        } elseif (!preg_match("/[@#%!$&]/", $contrasena)) {
+            $errores[] = "La contraseña debe tener un caracter especial (@, #, %, !, $, &).";
         }
 
-        if (isset($usuarioError)) {
-            echo $usuarioError . "<br>";
+        if ($contrasena !== $conf_contrasena) {
+            $errores[] = "Las contraseñas no coinciden.";
         }
-        if (isset($emailError)) {
-            echo $emailError . "<br>";
-        }
-        if (isset($contrasenaError)) {
-            echo $contrasenaError . "<br>";
+
+        if (empty($errores)) {
+            echo "Registro exitoso. <br>";
+            echo "Usuario: $usuario <br>";
+            echo "Email: $email <br>";
+        } else {
+            foreach ($errores as $error) {
+                echo "$error";
+            }
         }
     }
-?>
-
+    ?>
 </body>
 </html>
