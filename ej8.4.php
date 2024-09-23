@@ -23,27 +23,33 @@
         <input type="submit" value="Guardar">
     </form>
     <?php
-    class Usuario {
-        private $usuario;
+    class Contacto {
+        private $nombre;
         private $email;
-        private $contrasena;
+        private $apellido;
+        private $numTlf;
 
-        public function __construct($usuario, $email, $contrasena) {
-            $this->usuario = $usuario;
+        public function __construct($nombre, $apellido, $email, $numTlf) {
+            $this->nombre = $nombre;
+            $this->apellido = $apellido;
             $this->email = $email;
-            $this->contrasena = $contrasena;
+            $this->numTlf = $numTlf;
         }
 
-        public function get_usuario() {
-            return $this->usuario;
+        public function get_nombre() {
+            return $this->nombre;
+        }
+
+        public function get_apellido() {
+            return $this->apellido;
         }
 
         public function get_email() {
             return $this->email;
         }
 
-        public function get_contrasena() {
-            return $this->contrasena;
+        public function get_numTlf() {
+            return $this->numTlf;
         }
     }
     if (isset($_POST["nombre"]) && isset($_POST["apellido"]) && isset($_POST["email"]) && isset($_POST["numTlf"])) {
@@ -51,11 +57,19 @@
         $apellido = $_POST["apellido"];
         $email = $_POST["email"];
         $numTlf = $_POST["numTlf"];
-
-        echo "Nombre: $nombre<br>";
-        echo "Apellido: $apellido<br>";
-        echo "Email: $email<br>";
-        echo "Número de Teléfono: $numTlf<br>";
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)){
+            echo "Mete un formato de email valido.";
+        } elseif (!preg_match('/^[0-9]{9}$/', $numTlf)){
+            echo "Mete un formato de numero valido.";
+        } else {
+            $contactoNuevo = new Contacto($nombre, $apellido, $email, $numTlf);
+                
+            echo "Nombre:" . $contactoNuevo->get_nombre() . "<br>";
+            echo "Apellido:" . $contactoNuevo->get_apellido() . "<br>";
+            echo "Email:" . $contactoNuevo->get_email() . "<br>";
+            echo "Numero de Telefono:" . $contactoNuevo->get_numTlf() . "<br>";
+        }
     }
 ?>
 </body>
