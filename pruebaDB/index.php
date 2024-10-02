@@ -8,7 +8,7 @@
 <body>
     <h1>Formulario de Registro con Validación</h1>
     
-    <form method="post" action="index.php">
+    <form method="post" action="">
         <label for="usuario">Introduce el nombre: </label>
         <input type="text" id="usuario" name="usuario" required>
         <br>
@@ -30,13 +30,15 @@
         $username = "root";
         $password = "root";
         $dbname = "mydatabase";
-        /*
+        
         // Create connection
         $conn = new mysqli($servername, $username, $password, $dbname);
         // Check connection
         if ($conn->connect_error) {
           die("Connection failed: " . $conn->connect_error);
-        }*/
+        } else {
+            echo "Conexion valida.";
+        }
 
         $usuario = $_POST["usuario"];
         $email = $_POST["email"];
@@ -77,21 +79,16 @@
 
         if (empty($errores)) {
             $sql = "INSERT INTO usuarios (nombre, email, contrasena, conf_contrasena) VALUES ('$usuario', '$email', '$contrasena', '$conf_contrasena')";
-                
+            
             if ($conn->query($sql) === TRUE) {
                 echo "Registro exitoso. <br>";
                 echo "Usuario: $usuario <br>";
                 echo "Email: $email <br>";
             } else {
-                foreach ($errores as $error) {
-                    echo "Error: " . $sql . "<br>" . $conn->error;
-                }
+            echo "Error.";
             }
         }
-        $conn->close();
     }
     ?>
 </body>
 </html>
-
-

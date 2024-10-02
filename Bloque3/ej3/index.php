@@ -1,39 +1,71 @@
 <?php
+session_start();
 
-$cookie_tema = ["claro"];
-$cookie_idioma = ["español"];
-
-if (isset($_COOKIE["tema"])) {
-    $cookie_tema = $_COOKIE["tema"];
-    header("Location: pag1.php");
-    exit();
+if (!isset($_COOKIE["tema"])) {
+    setcookie("tema", "claro", time() + (86400 * 30), "/"); // 30 días
 }
-if (isset($_COOKIE["idoma"])) {
-    $cookie_idioma = $_COOKIE["idioma"];
+if (!isset($_COOKIE["idioma"])) {
+    setcookie("idioma", "español", time() + (86400 * 30), "/");
 }
 
+$tema = isset($_COOKIE["tema"]) ? $_COOKIE["tema"] : "claro";
+$idioma = isset($_COOKIE["idioma"]) ? $_COOKIE["idioma"] : "español";
+
+$mensajes = [
+    "español" => "Bienvenido",
+    "euskera" => "Ongi Etorri"
+];
+
+if ($tema == "oscuro") {
+    $fondo = "#000";
+    $texto = "#FFF";
+} else {
+    $fondo = "#FFF";
+    $texto = "#000";
+}
 ?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $idioma; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Configuración de Tema e Idioma</title>
+    <style>
+        body {
+            background-color: <?php echo $fondo; ?>;
+            color: <?php echo $texto; ?>;
+            font-family: Arial, sans-serif;
+        }
+        .configuracion {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-<form method="post" action="guardar.php">
-    <p> <?php echo "Tema seleccionado:" .$tema;?></p>
-    <input type="radio" id="oscuro" name="oscuro" value="oscuro">
-    <label for="Oscuro">Oscuro</label>
-    <input type="radio" id="claro" name="claro" value="claro">
-    <label for="Claro">Claro</label>
-    <br>
-    <p> <?php echo "Idioma seleccionado:" .$idioma;?></p>
-    <input type="radio" id="euskera" name="euskera" value="euskera">
-    <label for="Euskera">Euskera</label>
-    <input type="radio" id="español" name="español" value="español">
-    <label for="Español">Español</label>
-    <input type="submit" value="submit">
-</form>
+    <h1><?php echo $mensajes[$idioma]; ?></h1>
+    
+    <div class="configuracion">
+        <form action="guardar.php" method="POST">
+            <label for="tema">Selecciona el tema:</label>
+            <select id="tema" name="tema">
+                <option value="claro" <?php echo ($tema == "claro") ? "selected" : ""; ?>>Claro</option>
+                <option value="oscuro" <?php echo ($tema == "oscuro") ? "selected" : ""; ?>>Oscuro</option>
+            </select>
+            
+            <label for="idioma">Selecciona el idioma:</label>
+            <select id="idioma" name="idioma">
+                <option value="español" <?php echo ($idioma == "español") ? "selected" : ""; ?>>Español</option>
+                <option value="euskera" <?php echo ($idioma == "euskera") ? "selected" : ""; ?>>Euskera</option>
+            </select>
+            <br>
+            <br>        
+            <input type="submit" value="Guardar Preferencias">
+        </form>
+    </div>
 </body>
 </html>
