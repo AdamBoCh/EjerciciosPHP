@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn = new mysqli($servername, $username, $password, $dbname);
     
     if ($conn->connect_error) {
-        die("Fallo de conexión: " . $conn->connect_error);
+        die("Fallo de conexion: " . $conn->connect_error);
     }
 
     $usuario = $_POST["usuario"];
@@ -18,17 +18,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contrasena = $_POST["contrasena"];
     $conf_contrasena = $_POST["conf_contrasena"];
 
-    if ($contrasena !== $conf_contrasena) {
-        echo "Las contraseñas no coinciden.";
+    if (empty($email)) {
+        $error = "El email es requerido.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "El formato del email no es valido.";
     } else {
+        $sqlEmail = "SELECT * FROM usuarios WHERE email='$email'";
+        if ($conn->query($sqlEmail)->num_rows > 0) {
+            $error = "El email ya esta en uso.";
+        }
+    }
+
+    if ($contrasena !== $conf_contrasena) {
+        $error = "Las contraseñas no coinciden.";
+    }
+
+    if (empty($error)) {
         $sql = "INSERT INTO usuarios (nombre, email, contrasena) VALUES ('$usuario', '$email', '$contrasena')";
         
         if ($conn->query($sql) === TRUE) {
-            $_SESSION["usuario"] = $usuario;
+            $_SESSION["usuario"] = $usuario; 
             header("Location: principal.php"); 
             exit();
         } else {
-            echo "Error al registrar el usuario: " . $conn->error;
+            $error = "Error al registrar el usuario: " . $conn->error;
         }
     }
 
@@ -36,15 +49,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Registro</title>
+    <title>Registro</title>
 </head>
 <body>
     <h1>Registro</h1>
-    
     <form method="post" action="">
         <label for="usuario">Nombre:</label>
         <input type="text" id="usuario" name="usuario" required>
@@ -60,5 +72,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <br>
         <input type="submit" value="Registrar">
     </form>
+    <?php if (!empty($error)): ?>
+        <?php echo $error; ?>
+    <?php endif; ?>
 </body>
 </html>

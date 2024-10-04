@@ -15,7 +15,7 @@ if (!isset($_SESSION["usuario"])) {
 </head>
 <body>
     <h1>Bienvenido, <?php echo htmlspecialchars($_SESSION["usuario"]); ?></h1>
-    <p>Has iniciado sesion correctamente.</p>
+    <p>Has iniciado sesión correctamente.</p>
     <button><a href="cerrar.php">Cerrar sesión</a></button>
 </body>
 </html>
