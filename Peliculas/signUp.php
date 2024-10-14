@@ -25,13 +25,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($contrasena !== $conf_contrasena) {
         $error = "Las contraseñas no coinciden.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "El formato del correo electrónico no es válido.";
+        $error = "El formato del correo electronico no es valido.";
     } else {
         $sql = "SELECT * FROM usuarios WHERE nombre='$usuario' OR email='$email'";
         $result = $conn->query($sql);
         
         if ($result->num_rows > 0) {
-            $error = "El nombre de usuario o el correo ya están en uso.";
+            $error = "El nombre de usuario o el correo ya estan en uso.";
         } else {
             $sql = "INSERT INTO usuarios (nombre, email, contrasena) VALUES ('$usuario', '$email', '$contrasena')";
 

@@ -18,6 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombrePelicula = isset($_POST["nombre"]) ? $_POST["nombre"] : '';  
     $puntuacion = isset($_POST["puntuacion"]) ? intval($_POST["puntuacion"]) : 0; 
     $año = isset($_POST["ano"]) ? intval($_POST["ano"]) : 0; 
+    $accion = isset($_POST["accion"]) ? $_POST["accion"] : '';
 
     $error = ''; 
 
@@ -25,26 +26,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $resultUsuario = $conn->query($sqlUsuario);
 
     if ($resultUsuario->num_rows > 0) {
-
-        $sqlPeliculas = "SELECT * FROM peliculasUsuario WHERE usuario = '$usuario'";
+        $sqlPeliculas = "SELECT * FROM peliculasUsuario WHERE usuario = '$usuario' AND ISAN = '$ISAN'";
         $resultPeliculas = $conn->query($sqlPeliculas);
 
-        if ($resultPeliculas->num_rows > 0) {
-        } else {
-            $error = "No hay peliculas registradas para este usuario.";
-        }
-
-        if (!empty($usuario) && !empty($ISAN) && !empty($nombrePelicula) && $puntuacion >= 0 && $año > 0) {
-            $sqlInsert = "INSERT INTO peliculasUsuario (usuario, ISAN, nombre_pelicula, puntuacion, año) 
-                          VALUES ('$usuario', '$ISAN', '$nombrePelicula', $puntuacion, $año)";
-
-            if ($conn->query($sqlInsert) === TRUE) {
-                echo "Pelicula agregada con exito.";
+        if (strlen($ISAN) == 8) {
+            if ($accion == 'agregar' && $resultPeliculas->num_rows == 0) {
+                if (!empty($nombrePelicula) && $puntuacion >= 0 && $año > 0) {
+                    $sqlInsert = "INSERT INTO peliculasUsuario (usuario, ISAN, nombre_pelicula, puntuacion, año) 
+                                  VALUES ('$usuario', '$ISAN', '$nombrePelicula', $puntuacion, $año)";
+                    if ($conn->query($sqlInsert) === TRUE) {
+                        echo "Pelicula agregada.";
+                    } else {
+                        $error = "Error al agregar pelicula: " . $conn->error;
+                    }
+                } else {
+                    $error = "Completa los campos correctamente.";
+                }
+            } elseif ($accion == 'eliminar' && $resultPeliculas->num_rows > 0) {
+                $sqlDelete = "DELETE FROM peliculasUsuario WHERE usuario = '$usuario' AND ISAN = '$ISAN'";
+                if ($conn->query($sqlDelete) === TRUE) {
+                    echo "Pelicula eliminada.";
+                } else {
+                    $error = "Error al eliminar pelicula: " . $conn->error;
+                }
+            } elseif ($accion == 'actualizar' && $resultPeliculas->num_rows > 0) {
+                if (!empty($nombrePelicula)) {
+                    $sqlUpdate = "UPDATE peliculasUsuario 
+                                   SET nombre_pelicula = '$nombrePelicula', puntuacion = $puntuacion, año = $año 
+                                   WHERE usuario = '$usuario' AND ISAN = '$ISAN'";
+                    if ($conn->query($sqlUpdate) === TRUE) {
+                        echo "Pelicula actualizada.";
+                    } else {
+                        $error = "Error al actualizar pelicula: " . $conn->error;
+                    }
+                } else {
+                    $error = "Proporciona un nombre para la pelicula ha actualizar.";
+                }
             } else {
-                $error = "Error al agregar pelicula: " . $conn->error;
+                $error = "";
             }
         } else {
-            $error = "Completa todos los campos correctamente.";
+            $error = "El ISAN debe tener exactamente 8 dígitos.";
         }
     } else {
         $error = "El usuario no existe en la base de datos.";
@@ -67,7 +89,6 @@ if ($conn->connect_error) {
 $sqlPeliculas = "SELECT * FROM peliculasUsuario WHERE usuario = '" . $_SESSION["usuario"] . "'";
 $resultPeliculas = $conn->query($sqlPeliculas);
 $conn->close();
-
 ?>
 
 <!DOCTYPE html>
@@ -75,11 +96,11 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peliculas</title>
+    <title>Películas</title>
 </head>
 <body>
     <div class="movie-form">
-        <h2>Agregar Nueva Pelicula</h2>
+        <h2>Agregar Nueva Película</h2>
         <form action="#" method="POST">
             <label for="usuario">Nombre del Usuario:</label>
             <input type="text" id="usuario" name="usuario" value="<?php echo htmlspecialchars($_SESSION['usuario']); ?>" disabled>
@@ -94,7 +115,7 @@ $conn->close();
             <label for="ano">Año:</label>
             <input type="number" id="ano" name="ano" min="1900" max="2100" required>
             <br>
-            <label for="puntuacion">Puntuacion:</label>
+            <label for="puntuacion">Puntuación:</label>
             <select id="puntuacion" name="puntuacion" required>
                 <option value="" disabled selected>Selecciona una puntuacion</option>
                 <option value="0">0</option>
@@ -105,40 +126,72 @@ $conn->close();
                 <option value="5">5</option>
             </select>
             <br>
-            <input type="submit" value="Agregar Pelicula">
+            <input type="hidden" name="accion" value="agregar">
+            <input type="submit" value="Agregar Película">
         </form>
     </div>
     
     <br><br>
     
     <div>
-    <h2>Peliculas Registradas</h2>
-    <form action="#" method="post">
-        <table style="border: 1px solid black;">
-            <tr>
-                <th style="border: 1px solid black; padding: 8px; text-align:center;">Nombre Usuario</th>
-                <th style="border: 1px solid black; padding: 8px; text-align:center;">Nombre Película</th>
-                <th style="border: 1px solid black; padding: 8px; text-align:center;">ISAN</th>
-                <th style="border: 1px solid black; padding: 8px; text-align:center;">Año</th>
-                <th style="border: 1px solid black; padding: 8px; text-align:center;">Puntuación</th>
-            </tr>
-            <?php if ($resultPeliculas->num_rows > 0): ?>
-                <?php while ($row = $resultPeliculas->fetch_assoc()): ?>
-                    <tr>
-                        <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['usuario']); ?></td>
-                        <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['nombre_pelicula']); ?></td>
-                        <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['ISAN']); ?></td>
-                        <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['año']); ?></td>
-                        <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['puntuacion']); ?></td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
+        <h2>Películas Registradas</h2>
+        <form action="#" method="post">
+            <table style="border: 1px solid black;">
                 <tr>
-                    <td colspan="5" style="border: 1px solid black; padding: 8px; text-align: center;">No hay películas registradas para este usuario.</td>
+                    <th style="border: 1px solid black; padding: 8px; text-align:center;">Nombre Usuario</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align:center;">Nombre Pelicula</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align:center;">ISAN</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align:center;">Año</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align:center;">Puntuacion</th>
                 </tr>
-            <?php endif; ?>
-        </table>
-    </form>
+                <?php if ($resultPeliculas->num_rows > 0): ?>
+                    <?php while ($row = $resultPeliculas->fetch_assoc()): ?>
+                        <tr>
+                            <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['usuario']); ?></td>
+                            <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['nombre_pelicula']); ?></td>
+                            <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['ISAN']); ?></td>
+                            <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['año']); ?></td>
+                            <td style="border: 1px solid black; padding: 8px; text-align:center;"><?php echo htmlspecialchars($row['puntuacion']); ?></td>
+                                <form action="#" method="POST" style="display:inline;">
+                                    <input type="hidden" name="isan" value="<?php echo htmlspecialchars($row['ISAN']); ?>">
+                                    <input type="hidden" name="nombre" value="<?php echo htmlspecialchars($row['nombre_pelicula']); ?>">
+                                    <input type="hidden" name="puntuacion" value="<?php echo htmlspecialchars($row['puntuacion']); ?>">
+                                    <input type="hidden" name="ano" value="<?php echo htmlspecialchars($row['año']); ?>">
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="6" style="border: 1px solid black; padding: 8px; text-align: center;">No hay peliculas registradas.</td>
+                    </tr>
+                <?php endif; ?>
+            </table>
+        </form>
+    </div>
+
+    <div class="update-form">
+        <h2>Actualizar Película</h2>
+        <form action="#" method="POST">
+            <br>
+            <label for="isan">ISAN:</label>
+            <input type="text" id="isan" name="isan" required>
+            <br>
+            <input type="hidden" name="accion" value="actualizar">
+            <input type="submit" value="Actualizar Pelicula">
+        </form>
+    </div>
+
+    <div class="delete-form">
+        <h2>Eliminar Pelicula</h2>
+        <form action="#" method="POST">
+            <br>
+            <label for="isan">ISAN:</label>
+            <input type="text" id="isan" name="isan" required>
+            <br>
+            <input type="hidden" name="accion" value="eliminar">
+            <input type="submit" value="Eliminar">
+        </form>
     </div>
 
     <?php if(!empty($error)): ?>
