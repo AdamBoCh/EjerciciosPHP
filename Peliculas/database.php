@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Tabla usuarios ya existe";
     }
 
-    $sql = "CREATE TABLE IF NOT EXISTS peliculasUsuario (
+    $sql = "CREATE TABLE IF NOT EXISTS peliculas(
         usuario VARCHAR(50),
         ISAN CHAR(8),
         nombre_pelicula VARCHAR(100),
